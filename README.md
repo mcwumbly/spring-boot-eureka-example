@@ -83,32 +83,18 @@ On the Eureka dashboard, two clients will now be registered.
 Now try spinning up another instance of `eureka-client` by only over-riding the
 port parameter:
 
+By default, Eureka uses the hostname as the instance name, so you have to
+override the `eureka.instance.metadataMap.instanceId` parameter when running
+two instances locally for testing. ([reference](http://stackoverflow.com/a/30161798/3555741))
+
 ```
 cd eureka-client
-mvn spring-boot:run -Dserver.port=8082
+mvn spring-boot:run -Dserver.port=8082 -Deureka.instance.metadataMap.instanceId=instance2
 ```
 
 The `/whoami` endpoint for `http://localhost:8082` shows what we expect.
 
-In a minute or so, the `/instances` endpoint now shows the instance running on
-port 8082 also, but for some reason, it doesn't show the instance running on
-port 8080.
+In a minute or so, the `/instances` endpoint now shows two instances of
+eureka-client running.
 
-And if we check the `/instances` endpoint on `http://localhost:8080` we also
-now only see the instance running on 8082 (even though clearly, the one on
-8080 is running since that's what we're asking for.
-
-The Eureka dashboard only shows 1 instance of `eureka-client` running.
-
-What's going on here?
-
-I'm not sure yet...
-
-Let's try killing the instance running on 8082 and see what happens.
-
-When we query `/instances` on 8080, it still only shows the instance on 8082.
-
-But a minute later, that goes away and we just see the instance on 8080 again.
-
-The question is, why don't we see both instances of `eureka-client` when they are
-both running?
+The Eureka dashboard also shows 2 instances of `eureka-client` running.
