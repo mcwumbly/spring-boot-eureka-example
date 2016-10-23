@@ -1,4 +1,4 @@
-### Spring Boot Eureka Demo
+# Spring Boot Eureka Demo
 
 Simple demo of service registration and discovery using Eureka.
 
@@ -6,7 +6,7 @@ Initial work based on this guide:
 
 https://spring.io/guides/gs/service-registration-and-discovery/
 
-### Try it out
+## Try it out locally
 
 #### Eureka Server
 
@@ -113,3 +113,47 @@ registry and uses client side load balancing.
 
 Repeated requests to `http://localhost:9999/eureka-client/whoami` will show a different
 port depending on which instance it calls.
+
+## Try it out on CF with Container Networking
+
+On a local bosh-lite CF deployment with [netman](https://github.com/cloudfoundry-incubator/netman-release) 
+installed, push the apps using the manifest in the root of this repository.
+
+The `eureka-client` is configured with the `no-route:true` property to disable
+accessing it via the `go-router`.
+
+These properties are set to have the `euerka-client` register with it's IP
+address:
+
+- `spring.cloud.inetutils.preferredNetworks`
+- `eureka.client.preferIpAddress=true`
+
+They are both set in the `application.properties` file, but the former is
+overridden via an environment variable in the manifest to choose an IP address
+on the container overlay network:
+`SPRING_CLOUD_INETUTILS_PREFERREDNETWORKS: 10.255`
+
+The `eureka-client` registers with the `eureka-server` via it's public address,
+`eureka-server.bosh-lite.com`.  The `zuul-proxy` is also configured to look up
+services registered in eureka at this address. Edit this address if deploying
+to a CF on a different domain.
+
+Once the apps are pushed, allow access from the zuul-proxy to the eureka-client
+using the `cf` cli [`network-policy-plugin`](https://github.com/cloudfoundry-incubator/netman-release/blob/develop/docs/usage.md)
+
+```
+cf allow-access zuul-proxy eureka-client --protocol tcp --port 8080
+```
+
+After doing this, you should be able to access the eureka-client service
+via the zuul-proxy:
+
+http://zuul-proxy.bosh-lite.com/eureka-client
+
+In addition to the `/whoami` and `/instances` endpoints, the following actuator
+endpoints are also available:
+
+- /health
+- /metrics
+- /mappings
+
