@@ -78,7 +78,7 @@ this `foo` instance too.
 On the Eureka dashboard, two clients will now be registered.
 
 
-#### Sping up another client with the *same* name
+#### Spin up another client with the *same* name
 
 Now try spinning up another instance of `eureka-client` by only over-riding the
 port parameter:
@@ -98,3 +98,18 @@ In a minute or so, the `/instances` endpoint now shows two instances of
 eureka-client running.
 
 The Eureka dashboard also shows 2 instances of `eureka-client` running.
+
+#### Access eureka-client service via the zuul proxy
+
+Start up the zuul proxy application
+
+```
+cd zuul-proxy
+mvn spring-boot:run
+```
+
+The proxy automatically maps a route based on the service names it finds in the eureka
+registry and uses client side load balancing.
+
+Repeated requests to `http://localhost:9999/eureka-client/whoami` will show a different
+port depending on which instance it calls.
